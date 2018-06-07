@@ -2,7 +2,7 @@ function importO365Emails {
     param (
         [int]$organisationid
     )
-    
+
 
     # Get all contacts from ITGlue
     $ITGlueContacts = ((Get-ITGlueContacts -page_size ((Get-ITGlueContacts).meta.'total-count')).data | Where-Object {$_.attributes.'organization-id' -eq $organisationid})
@@ -30,7 +30,7 @@ function importO365Emails {
             $firstname = $currentUser.DisplayName
             $lastname = ""
         }
-        
+
         $body = @{
             organization_id = $organisationid
             data = @{
