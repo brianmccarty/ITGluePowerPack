@@ -9,6 +9,7 @@ param(
 	[String[]]$MountPoint="G:",
 	[String]$ComputerName=$env:COMPUTERNAME,
 	[Switch]$CreateConfiguration,
+	[String]$ConfigurationType = "Desktop",
 	[String]$Path = "$env:USERPROFILE\UpstreamPowerPack",
 	[Switch]$ErrorLog,
 	[String]$LogFile = "$Path\Encrypt.ps1_$(Get-Date -Format "yyyy-MM-dd HH:mm:ss").log"
@@ -60,14 +61,59 @@ Begin {
 		if(-not $configuration) {
 			Write-Verbose "No configuration was found."
 			if($CreateConfiguration) {
+				# Get or create IDs if not existing
+
+				# Manufacturers
 				Write-Verbose "Creating new configuration."
-				#new config
-				$properties = @{
-					"ConfigName" = $configName
-					"ConfigType" = $configType
-					"ConfigStatus" = $configStatus
+				if($manufacturer = ((Get-ITGlueManufacturers -filter_name (gwmi win32_bios).Manufacturer))) {
+					Write-Verbose "Manufacturer found: $($manufacturer.data.id), '$($manufacturer.data.attributes.name)'."
+				} elseif($manufacturer = New-ITGlueManufacturers -data (@{data = @{type = "manufacturers";attributes = @{name = (gwmi win32_bios).Manufacturer}}})) {
+					Write-Verbose "Manufacturer created: $($manufacturer.data.id), '$($manufacturer.data.attributes.name)'."
 				}
-				$object = New-Object -TypeName PSObject -Property $properties
+
+				# Model ID
+				if($model = (Get-ITGlueModels -manufacturer_id $manufacturerId).data) {
+					Write-Verbose "Model found: $($model.data.attributes)."
+				} elseif($model = New-ITGlueModels -data (@{data = @{type = "models";attributes = @{manufacturer_id = $manufacturerId;name = (Get-WmiObject Win32_Computersystem).Model}}})) {
+					Write-Verbose "Model created: $($model.data.attributes)."
+				}
+
+				# Network interfaces
+				Write-Verbose "Looking for network interfaces..."
+				$interfaceArray = @();
+				$first = $true
+				Get-NetIPConfiguration | ForEach-Object {
+					$interfaceArray += @{
+						ip_address = (Get-NetIPConfiguration -InterfaceIndex $_.InterfaceIndex).IPv4Address.IPAddress
+						name = $_.InterfaceIndex
+						primary = if($first) {$first = $false;$true} else {$false}
+				        note = $_.InterfaceAlias
+					}
+				}
+				Write-Verbose "Network interfaces found: $($interfaceArray | ConvertTo-Json)"
+				#new config
+				$configuration = @{
+					data = @{
+						type = "configurations"
+						attributes = @{
+							organization_id = $OrganizationId
+							configuration_type_id = (Get-ITGlueConfigurationTypes -filter_name "Desktop").data.id
+							configuration_status_id = (Get-ITGlueConfigurationStatuses -filter_name "Active").data.id
+							manufacturer_id = $manufacturerId
+							model_id = $model.data.id
+							Name = $ComputerName
+							relationships = @{
+								configuration_interfaces = @{
+									data = @(
+										$interfaceArray
+									)
+								}
+							}
+						}
+					}
+				}
+
+				$thisConfiguration = New-ITGlueConfigurations -data $configuration
 			} else {
 				Write-Verbose "Not creating configuration."
 				Write-Verbose "Exiting"
@@ -86,7 +132,7 @@ Process {
 
 	$body = {
 		data = @(
-			
+			"awd" = "awd"
 		)
 	}
 	# $encryption.KeyProtector.KeyProtectorId
