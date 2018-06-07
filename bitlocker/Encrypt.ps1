@@ -65,9 +65,9 @@ Begin {
 
 				# Manufacturers
 				Write-Verbose "Creating new configuration."
-				if($manufacturer = ((Get-ITGlueManufacturers -filter_name (gwmi win32_bios).Manufacturer))) {
+				if($manufacturer = ((Get-ITGlueManufacturers -filter_name (Get-WmiObject Win32_BIOS).Manufacturer))) {
 					Write-Verbose "Manufacturer found: $($manufacturer.data.id), '$($manufacturer.data.attributes.name)'."
-				} elseif($manufacturer = New-ITGlueManufacturers -data (@{data = @{type = "manufacturers";attributes = @{name = (gwmi win32_bios).Manufacturer}}})) {
+				} elseif($manufacturer = New-ITGlueManufacturers -data (@{data = @{type = "manufacturers";attributes = @{name = (Get-WmiObject Win32_BIOS).Manufacturer}}})) {
 					Write-Verbose "Manufacturer created: $($manufacturer.data.id), '$($manufacturer.data.attributes.name)'."
 				}
 
@@ -82,12 +82,15 @@ Begin {
 				Write-Verbose "Looking for network interfaces..."
 				$interfaceArray = @();
 				$first = $true
-				Get-NetIPConfiguration | ForEach-Object {
+				Get-NetAdapter | ForEach-Object {
 					$interfaceArray += @{
-						ip_address = (Get-NetIPConfiguration -InterfaceIndex $_.InterfaceIndex).IPv4Address.IPAddress
-						name = $_.InterfaceIndex
-						primary = if($first) {$first = $false;$true} else {$false}
-				        note = $_.InterfaceAlias
+						type = "configuration_interfaces"
+						attributes = @{
+							ip_address = (Get-NetIPConfiguration -InterfaceIndex $_.InterfaceIndex).IPv4Address.IPAddress
+							name = $_.InterfaceIndex
+							primary = if($first) {$first = $false;$true} else {$false}
+							notes = $_.InterfaceAlias
+						}
 					}
 				}
 				Write-Verbose "Network interfaces found: $($interfaceArray | ConvertTo-Json)"
@@ -102,12 +105,14 @@ Begin {
 							manufacturer_id = $manufacturerId
 							model_id = $model.data.id
 							Name = $ComputerName
-							relationships = @{
-								configuration_interfaces = @{
-									data = @(
-										$interfaceArray
-									)
-								}
+							serial_number = (Get-WmiObject Win32_BIOS).SerialNumber
+							primary_ip = $interfaceArray[0].Values."ip_address"
+						}
+						relationships = @{
+							configuration_interfaces = @{
+								data = @(
+									$interfaceArray
+								)
 							}
 						}
 					}
