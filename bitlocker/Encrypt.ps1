@@ -106,7 +106,12 @@ Begin {
 							model_id = $model.data.id
 							Name = $ComputerName
 							serial_number = (Get-WmiObject Win32_BIOS).SerialNumber
+
+							hostname = $ComputerName
 							primary_ip = $interfaceArray[0].Values."ip_address"
+							mac_address = (Get-CimInstance win32_networkadapterconfiguration | Where {$_.ipaddress -eq $interfaceArray[0].Values."ip_address"}).MACAddress
+							default_gateway = ((Get-CimInstance win32_networkadapterconfiguration | Where {$_.ipaddress -eq $interfaceArray[0].Values."ip_address"})).DefaultIPGateway
+							operating_system_id = 111
 						}
 						relationships = @{
 							configuration_interfaces = @{
