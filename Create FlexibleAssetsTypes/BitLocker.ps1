@@ -17,9 +17,9 @@ $body = @{
                             order = 1
                             name = 'Computer'
                             kind = 'Tag'
-                            hint = ''
+                            hint = 'Which computer is the drive on?'
                             tag_type = 'Configurations'
-                            required = $false
+                            required = $true
                             show_in_list = $true
                             use_for_title = $true
                         }
@@ -28,13 +28,61 @@ $body = @{
                         type = 'flexible_asset_fields'
                         attributes = @{
                             order = 2
+                            name = 'Drive'
+                            kind = 'Select'
+                            hint = 'Which drive was encrypted?'
+                            required = $true
+                            show_in_list = $true
+                            use_for_title = $true
+                        }
+                    },
+                    @{
+                        type = 'flexible_asset_fields'
+                        attributes = @{
+                            order = 3
+                            name = 'Capacity'
+                            kind = 'Text'
+                            hint = 'Size of the harddrive.'
+                            required = $false
+                            show_in_list = $true
+                            use_for_title = $true
+                        }
+                    },
+                    @{
+                        type = 'flexible_asset_fields'
+                        attributes = @{
+                            order = 4
                             name = 'KeyProtectorType'
                             kind = 'Tag'
                             hint = ''
                             tag_type = 'Configurations'
-                            required = $false
-                            show_in_list = $true
-                            use_for_title = $true
+                            required = $true
+                            show_in_list = $false
+                            use_for_title = $false
+                        }
+                    },
+                    @{
+                        type = 'flexible_asset_fields'
+                        attributes = @{
+                            order = 5
+                            name = 'KeyProtectorType'
+                            kind = 'Text'
+                            hint = ''
+                            required = $true
+                            show_in_list = $false
+                            use_for_title = $false
+                        }
+                    },
+                    @{
+                        type = 'flexible_asset_fields'
+                        attributes = @{
+                            order = 6
+                            name = 'RecoveryPassword'
+                            kind = 'Text'
+                            hint = ''
+                            required = $true
+                            show_in_list = $false
+                            use_for_title = $false
                         }
                     }
                 )
