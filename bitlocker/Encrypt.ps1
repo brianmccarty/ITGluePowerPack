@@ -51,7 +51,7 @@
     Encrypt drive C and find configuration ID with name $env:COMPUTERNAME and create a new configuration if none was found.
 .EXAMPLE
     .\Encrypt.ps1 -OrganizationId 2504761 -FlexibleAssetId 90253 -MountPoint c -FindConfiguration -ConfigurationName "SESOL01SRV01" -CreateConfiguration
-    Encrypt drive C and find configuration ID with name "SESOL01SRV01" and create a new configuration if none was found with name "SESOL01SRV01"
+    reEncrypt drive C and find configuration ID with name "SESOL01SRV01" and create a new configuration if none was found with name "SESOL01SRV01"
 .EXAMPLE
     .\Encrypt.ps1 -OrganizationId 2504761 -FlexibleAssetId 90253 -MountPoint c -ConfigurationId 14424920
     Encrypt drive C and and match it to configuration ID 14424920.
