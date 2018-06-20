@@ -30,6 +30,7 @@ $body = @{
                             order = 2
                             name = 'Drive'
                             kind = 'Select'
+                            default_value = "A:`r`nB:`r`nC:`r`nD:`r`nE:`r`nF:`r`nG:`r`nH:`r`nI:`r`nJ:`r`nK:`r`nL:`r`nM:`r`nN:`r`nO:`r`nP:`r`nQ:`r`nR:`r`nS:`r`nT:`r`nU:`r`nV:`r`nW:`r`nX:`r`nY:`r`nZ:"
                             hint = 'Which drive was encrypted?'
                             required = $true
                             show_in_list = $true
@@ -52,8 +53,20 @@ $body = @{
                         type = 'flexible_asset_fields'
                         attributes = @{
                             order = 4
-                            name = 'KeyProtectorType'
-                            kind = 'Tag'
+                            name = 'Encryption method'
+                            kind = 'Text'
+                            hint = 'Which encryption method was used to encrypt the drive?'
+                            required = $false
+                            show_in_list = $true
+                            use_for_title = $false
+                        }
+                    },
+                    @{
+                        type = 'flexible_asset_fields'
+                        attributes = @{
+                            order = 5
+                            name = 'KeyProtectorId'
+                            kind = 'Text'
                             hint = ''
                             tag_type = 'Configurations'
                             required = $true
@@ -64,7 +77,7 @@ $body = @{
                     @{
                         type = 'flexible_asset_fields'
                         attributes = @{
-                            order = 5
+                            order = 6
                             name = 'KeyProtectorType'
                             kind = 'Text'
                             hint = ''
@@ -76,9 +89,9 @@ $body = @{
                     @{
                         type = 'flexible_asset_fields'
                         attributes = @{
-                            order = 6
+                            order = 7
                             name = 'RecoveryPassword'
-                            kind = 'Text'
+                            kind = 'Password'
                             hint = ''
                             required = $true
                             show_in_list = $false
