@@ -156,6 +156,15 @@ Function New-Configuration {
         Write-Verbose "Model not found, created: $($model.attributes)."
     }
 
+    # Windows version
+    $itGlueOS = Get-ITGlueOperatingSystems
+
+    foreach ($os in $itGlueOS.data) {
+        if(([WmiClass]"\\localhost\root\default:stdRegProv").GetStringValue(2147483650, "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName").sValue -like "$($os.attributes.name)*") {
+            $windowsVersion = $os.id
+        }
+    }
+
     # Network interfaces
     Write-Verbose "Searching for network interfaces..."
     $interfaceArray = @();
@@ -180,7 +189,7 @@ Function New-Configuration {
             type = "configurations"
             attributes = @{
                 organization_id = $OrganizationId
-                configuration_type_id = (Get-ITGlueConfigurationTypes -filter_name "Desktop").data.id
+                configuration_type_id = (Get-ITGlueConfigurationTypes -filter_name $ConfigurationType).data.id
                 configuration_status_id = (Get-ITGlueConfigurationStatuses -filter_name "Active").data.id
                 manufacturer_id = $manufacturer.data.id
                 model_id = $model.data.id
@@ -191,7 +200,7 @@ Function New-Configuration {
                 primary_ip = $interfaceArray[0].Values."ip_address"
                 mac_address = (Get-CimInstance win32_networkadapterconfiguration | Where {$_.ipaddress -eq $interfaceArray[0].Values."ip_address"}).MACAddress
                 default_gateway = ((Get-CimInstance win32_networkadapterconfiguration | Where {$_.ipaddress -eq $interfaceArray[0].Values."ip_address"})).DefaultIPGateway
-                operating_system_id = 111
+                operating_system_id = $windowsVersion
             }
             relationships = @{
                 configuration_interfaces = @{

@@ -18,6 +18,15 @@ if($model = (Get-ITGlueModels -manufacturer_id $manufacturerId).data) {
     Write-Verbose "Model not found, created: $($model.attributes)."
 }
 
+# Windows version
+$itGlueOS = Get-ITGlueOperatingSystems
+
+foreach ($os in $itGlueOS.data) {
+    if(([WmiClass]"\\localhost\root\default:stdRegProv").GetStringValue(2147483650, "SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ProductName").sValue -like "$($os.attributes.name)*") {
+        $windowsVersion = $os.id
+    }
+}
+
 # Network interfaces
 Write-Verbose "Searching for network interfaces..."
 $interfaceArray = @();
@@ -54,7 +63,7 @@ $configuration = @{
             primary_ip = $interfaceArray[0].Values."ip_address"
             mac_address = (Get-CimInstance win32_networkadapterconfiguration | Where {$_.ipaddress -eq $interfaceArray[0].Values."ip_address"}).MACAddress
             default_gateway = ((Get-CimInstance win32_networkadapterconfiguration | Where {$_.ipaddress -eq $interfaceArray[0].Values."ip_address"})).DefaultIPGateway
-            operating_system_id = 111
+            operating_system_id = $windowsVersion
         }
         relationships = @{
             configuration_interfaces = @{
