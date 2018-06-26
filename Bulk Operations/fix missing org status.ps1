@@ -4,24 +4,22 @@ param(
     [string]$StatusName = "Active",
 
     [Parameter(ParameterSetName="statusID")]
-    [int]$StatusID,
-
-    [string]$Type
+    [int]$StatusId
 )
 
 if($PsCmdlet.ParameterSetName -eq "statusName") {
-    $StatusID = ((Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq "Active"}).id
-    if($StatusID.Count -gt 1) {
-        #$statusID = $StatusID[1]
+    $StatusId = ((Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq "Active"}).id
+    if($StatusId.Count -gt 1) {
+        #$statusId = $StatusId[1]
         Write-Error "More than one status ID was found. Please specify the ID to use."
         $validIds = @()
         (Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq "Active"} | ForEach-Object {
             Write-Output "$($_.id) - $($_.attributes.name) - Synced: $($_.attributes.synced)"
             $validIds += $_.id
         }
-        while(-not $validIds.Contains($statusID)) {
-            $StatusID = Read-Host -Prompt "ID"
-            if(-not $validIds.Contains($statusID)) {
+        while(-not $validIds.Contains($statusId)) {
+            $StatusId = Read-Host -Prompt "ID"
+            if(-not $validIds.Contains($statusId)) {
                 Write-Output "Please enter a valid ID."
             }
         }
