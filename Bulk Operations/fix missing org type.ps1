@@ -1,25 +1,25 @@
-[cmdletbinding(DefaultParameterSetName="statusName")]
+[cmdletbinding(DefaultParameterSetName="typeName")]
 param(
-    [Parameter(ParameterSetName="statusName")]
-    [string]$StatusName = "Active",
+    [Parameter(ParameterSetName="typeName")]
+    [string]$TypeName = "Active",
 
-    [Parameter(ParameterSetName="statusID")]
-    [int]$StatusId
+    [Parameter(ParameterSetName="typeID")]
+    [int]$TypeId
 )
 
-if($PsCmdlet.ParameterSetName -eq "statusName") {
-    $StatusId = ((Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq "Active"}).id
-    if($StatusId.Count -gt 1) {
-        #$statusId = $StatusId[1]
-        Write-Error "More than one status ID was found. Please specify the ID to use."
+if($PsCmdlet.ParameterSetName -eq "typeName") {
+    $TypeId = ((Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq $TypeName}).id
+    if($TypeId.Count -gt 1) {
+        #$TypeId = $TypeId[1]
+        Write-Error "More than one type ID was found. Please specify the ID to use."
         $validIds = @()
-        (Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq "Active"} | ForEach-Object {
+        (Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq $TypeName} | ForEach-Object {
             Write-Output "$($_.id) - $($_.attributes.name) - Synced: $($_.attributes.synced)"
             $validIds += $_.id
         }
-        while(-not $validIds.Contains($statusId)) {
-            $StatusId = Read-Host -Prompt "ID"
-            if(-not $validIds.Contains($statusId)) {
+        while(-not $validIds.Contains($TypeId)) {
+            $TypeId = Read-Host -Prompt "ID"
+            if(-not $validIds.Contains($TypeId)) {
                 Write-Output "Please enter a valid ID."
             }
         }
@@ -27,33 +27,15 @@ if($PsCmdlet.ParameterSetName -eq "statusName") {
 }
 
 $organizations = (Get-ITGlueOrganizations -page_size ((Get-ITGlueOrganizations).meta.'total-count')).data
-$locations = (Get-ITGlueLocations -page_size ((Get-ITGlueLocations).meta.'total-count')).data
-$locationsToUpdate = @()
+$organizationsToUpdate = @()
 
 $organizations | ForEach-Object {
-    $currentOrgId = $_.id
-    if(-not (($locations | where {$_.attributes.'organization-id' -eq $currentOrgId}).attributes.primary | where {$_ -eq $True}) ) {
-        $locations | where {$_.attributes.'organization-id' -eq $currentOrgId} | ForEach-Object {
-            if($locationsToUpdate) {
-                if(-not ( ($locationsToUpdate.attributes.'organization_id').Contains($currentOrgId) ) ) {
-                    $locationsToUpdate += @{
-                        type = "locations"
-                        attributes = @{
-                            id = $_.id
-                            primary = 1
-                            organization_id = $currentOrgId
-                        }
-                    }
-                }
-            } else {
-                $locationsToUpdate += @{
-                    type = "locations"
-                    attributes = @{
-                        id = $_.id
-                        primary = 1
-                        organization_id = $currentOrgId
-                    }
-                }
+    if(-not $_.attributes.'organization-type-id') {
+        $organizationsToUpdate += @{
+            type = "organizations"
+            attributes = @{
+                id = $_.id
+                organization_type_id = $TypeId
             }
         }
     }
@@ -61,8 +43,8 @@ $organizations | ForEach-Object {
 
 $body = @{
     data = @(
-        $locationsToUpdate
+        $organizationsToUpdate
     )
 }
 
-Set-ITGlueLocations -data $body
+Set-ITGlueOrganizations -data $body
