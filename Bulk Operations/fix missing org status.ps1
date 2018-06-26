@@ -46,3 +46,5 @@ $body = @{
         $organizationsToUpdate
     )
 }
+
+Set-ITGlueOrganizations -data $body
