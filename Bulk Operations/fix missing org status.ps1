@@ -13,7 +13,7 @@ if($PsCmdlet.ParameterSetName -eq "statusName") {
         #$statusId = $StatusId[1]
         Write-Error "More than one status ID was found. Please specify the ID to use."
         $validIds = @()
-        (Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq "Active"} | ForEach-Object {
+        (Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq $StatusName} | ForEach-Object {
             Write-Output "$($_.id) - $($_.attributes.name) - Synced: $($_.attributes.synced)"
             $validIds += $_.id
         }
