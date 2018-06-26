@@ -4,7 +4,9 @@ param(
     [string]$StatusName = "Active",
 
     [Parameter(ParameterSetName="statusID")]
-    [int]$StatusID
+    [int]$StatusID,
+
+    [string]$Type
 )
 
 if($PsCmdlet.ParameterSetName -eq "statusName") {
