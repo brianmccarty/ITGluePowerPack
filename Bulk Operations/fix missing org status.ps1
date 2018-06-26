@@ -8,7 +8,7 @@ param(
 )
 
 if($PsCmdlet.ParameterSetName -eq "statusName") {
-    $StatusId = ((Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq "Active"}).id
+    $StatusId = ((Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq $StatusName}).id
     if($StatusId.Count -gt 1) {
         #$statusId = $StatusId[1]
         Write-Error "More than one status ID was found. Please specify the ID to use."
@@ -27,33 +27,15 @@ if($PsCmdlet.ParameterSetName -eq "statusName") {
 }
 
 $organizations = (Get-ITGlueOrganizations -page_size ((Get-ITGlueOrganizations).meta.'total-count')).data
-$locations = (Get-ITGlueLocations -page_size ((Get-ITGlueLocations).meta.'total-count')).data
-$locationsToUpdate = @()
+$organizationsToUpdate = @()
 
 $organizations | ForEach-Object {
-    $currentOrgId = $_.id
-    if(-not (($locations | where {$_.attributes.'organization-id' -eq $currentOrgId}).attributes.primary | where {$_ -eq $True}) ) {
-        $locations | where {$_.attributes.'organization-id' -eq $currentOrgId} | ForEach-Object {
-            if($locationsToUpdate) {
-                if(-not ( ($locationsToUpdate.attributes.'organization_id').Contains($currentOrgId) ) ) {
-                    $locationsToUpdate += @{
-                        type = "locations"
-                        attributes = @{
-                            id = $_.id
-                            primary = 1
-                            organization_id = $currentOrgId
-                        }
-                    }
-                }
-            } else {
-                $locationsToUpdate += @{
-                    type = "locations"
-                    attributes = @{
-                        id = $_.id
-                        primary = 1
-                        organization_id = $currentOrgId
-                    }
-                }
+    if(-not $_.attributes.'organization-status-id') {
+        $organizationsToUpdate += @{
+            type = "organizations"
+            attributes = @{
+                id = $_.id
+                organization_status_id = $StatusId
             }
         }
     }
@@ -61,8 +43,6 @@ $organizations | ForEach-Object {
 
 $body = @{
     data = @(
-        $locationsToUpdate
+        $organizationsToUpdate
     )
 }
-
-Set-ITGlueLocations -data $body
