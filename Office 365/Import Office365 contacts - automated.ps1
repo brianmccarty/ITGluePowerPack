@@ -1,5 +1,5 @@
 param (
-    [int]$organisationid,
+    [String]$organisationid,
     [string]$path = "$env:USERPROFILE\UpstreamPowerPack",
     [string]$username,
     [string]$password,
