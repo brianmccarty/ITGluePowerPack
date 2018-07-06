@@ -1,3 +1,9 @@
+param (
+    [int64]$organisationid = 2504761,
+    [int64]$flexAssetId = 67362
+)
+
+
 function ITGlueTranslation($skuPartNumber) {
     switch($skuPartNumber) {
         "O365_BUSINESS"            {return "Office 365 Business"}
@@ -9,25 +15,19 @@ function ITGlueTranslation($skuPartNumber) {
       # (Get-AzureADSubscribedSku).SkuPartNumber to see all O365
       # version. Replace "Powershell output" with version add
       # "ITGlue translation" with what you want to see in ITGlue.
-      
+
       # Template for adding more
       # {"Powershell output"}      {return "ITGlue translation"}
       # {"Powershell output"}      {return "ITGlue translation"}
       # {"Powershell output"}      {return "ITGlue translation"}
       # {"Powershell output"}      {return "ITGlue translation"}
-        
+
         default                    {return $skuPartNumber}
     }
 }
 
 
 function addO365Users {
-    param (
-        [int]$organisationid,
-        [int]$flexAssetId
-    )
-    
-
     # Initiate variables
     $ITGlueContacts = $null
     $ITGlueAsset = $null
@@ -71,7 +71,7 @@ function addO365Users {
     $O365VersionInUse = $O365VersionInUse | Select-Object -Unique
     foreach($officeVersion in $O365VersionInUse) {
         $currentITGlueAsset = $ITGlueAsset.data | Where-Object{$_.attributes.name -eq $officeVersion -and $_.attributes.traits.notes -eq "Do not remove this note."}
-        
+
         $removeTheseContacts = New-Object System.Collections.ArrayList
         foreach($key in $matchedContacts.Keys) {
             # If ID from all contacts is not contained in the flexible asset...
@@ -84,18 +84,18 @@ function addO365Users {
                         $removeTheseContacts.Add($key) > $null
                     }
                 }
-            }    
+            }
         }
 
         foreach($id in $removeTheseContacts) {
             $matchedContacts.Remove($id)
         }
-        
+
         $matchedContactsForCurrentVersion = @($matchedContacts.GetEnumerator()) | Where-Object {
             $_.value.OffVersion -eq $officeVersion
         }
 
-        
+
 
 
 
@@ -148,4 +148,5 @@ Import-Module ITGlueAPI
 
 
 # Relace with your Organisation ID and Flexible Asset ID.
+# addO365Users -organisationid $organisationid -flexAssetId $flexAssetId
 addO365Users -organisationid 2504761 -flexAssetId 67362

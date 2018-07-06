@@ -1,4 +1,6 @@
+[cmdletbinding()]
 param (
+    [Parameter(Mandatory=$true)]
     [String]$organisationid,
     [string]$path = "$env:USERPROFILE\UpstreamPowerPack",
     [string]$username,
@@ -51,15 +53,7 @@ if(-not (Get-Module -ListAvailable -Name AzureAD)) {
 $ITGlueContacts = ((Get-ITGlueContacts -page_size ((Get-ITGlueContacts).meta.'total-count')).data | Where-Object {$_.attributes.'organization-id' -eq $organisationid})
 
 
-Get-AzureADUser | ForEach-Object {
-    if($_.AssignedLicenses.skuid -eq $null) {
-        # Remove "return" to import unlicensed users.
-        return
-    } elseif($ITGlueContacts.attributes.'contact-emails'.value -contains $_.UserPrincipalName) {
-        # Skip existing emails
-        return
-    }
-
+Get-AzureADUser -All $true | ForEach-Object {
     $currentUser = $_
 
     # Clean up name
@@ -73,6 +67,15 @@ Get-AzureADUser | ForEach-Object {
         $firstname = $currentUser.DisplayName
         $lastname = ""
     }
+
+    if($_.AssignedLicenses.skuid -eq $null) {
+        # Skip unlicensed users.
+        return
+    } elseif(($ITGlueContacts.attributes.'contact-emails'.value -contains $_.UserPrincipalName) -or ($ITGlueContacts.attributes.'first-name' -eq $firstname -and $ITGlueContacts.attributes.'last-name' -eq $lastname)) {
+        # Skip existing emails
+        return
+    }
+
 
     $body = @{
         organization_id = $organisationid
