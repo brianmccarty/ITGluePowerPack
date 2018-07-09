@@ -1,4 +1,4 @@
-[cmdletbinding(DefaultParameterSetName="Credentials")]
+[cmdletbinding(DefaultParameterSetName="ManualMode")]
 param (
     [Parameter(Mandatory=$true)]
     [String]$organisationid,
@@ -21,7 +21,8 @@ param (
 
     [switch]$Log,
     [String]$LogFile = "$Path\Encrypt.ps1_$(Get-Date -Format "yyyy-MM-dd").log",
-    [String]$Unlicensed
+    [String]$Unlicensed,
+    [String]$Duplicates
 )
 
 
@@ -57,7 +58,12 @@ if($PSCmdlet.ParameterSetName -eq "Credentials") {
         Write-Message -Message "Please run script with -username and -password parameter instead. Use -savecreds to save them for later use." -Warning
         exit
     } else {
-        $credential = Import-CliXML -Path $Path\o365credentials.xml
+        try {
+            Connect-AzureAD -Credential $credential > $null
+        } catch [Exception]{
+            Write-Message -Message "Login error: $($_)" -Warning
+            exit
+        }
     }
 }
 
@@ -77,7 +83,7 @@ if($PSCmdlet.ParameterSetName -eq "NoCredentials") {
 
 if($ManualMode) {
     $doNext = "find org"
-    :MistakeLoop
+    :FindOrganization
     while($true) {
         switch ($doNext) {
             "find org" {
@@ -147,7 +153,7 @@ if($ManualMode) {
             "confirm org" {
                 $userInput = Read-Host "Do you want to import into $($organizationName.attributes.name)? (y/n)"
                 if("yes" -match $userInput) {
-                    break MistakeLoop
+                    break FindOrganization
                 } else {
                     $doNext = "find org"
                 }
@@ -180,10 +186,11 @@ Get-AzureADUser -All $true | ForEach-Object {
 
     if($_.AssignedLicenses.skuid -eq $null -and -not $Unlicensed) {
         # Skip unlicensed users.
-        Write-Message -Message "Skipping $()"
+        Write-Message -Message "Skipping unlicensed user: $($_.UserPrincipalName)"
         return
-    } elseif(($ITGlueContacts.attributes.'contact-emails'.value -contains $_.UserPrincipalName) -or ($ITGlueContacts.attributes.'first-name' -eq $firstname -and $ITGlueContacts.attributes.'last-name' -eq $lastname)) {
+    } elseif((-not $Duplicates) -and (($ITGlueContacts.attributes.'contact-emails'.value -contains $_.UserPrincipalName) -or ($ITGlueContacts.attributes.'first-name' -eq $firstname -and $ITGlueContacts.attributes.'last-name' -eq $lastname))) {
         # Skip existing emails and names
+        Write-Message -Message "Skipping existing user: $($_.UserPrincipalName)"
         return
     }
 
