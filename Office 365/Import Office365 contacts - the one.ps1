@@ -213,6 +213,9 @@ Get-AzureADUser -All $true | ForEach-Object {
             }
         }
     }
+    if($ManualMode) {
 
-    New-ITGlueContacts -data $body
+    } else {
+        New-ITGlueContacts -data $body
+    }
 }
