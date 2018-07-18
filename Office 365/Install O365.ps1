@@ -15,8 +15,8 @@
     Default $env:USERPROFILE\UpstreamPowerPack. Set this parameter if you want to store your credentials somewhere else.
 .PARAMETER Log
     Turns on logging.
-.PARAMETER LogPath
-    Location to store logPath. Default same as Path.
+.PARAMETER LogFile
+    Where and name of log file.
 .PARAMETER SaveCredentials
     Whether or not to save credentials for later use.
 .NOTES
@@ -50,7 +50,7 @@ param(
 
     [Parameter(ParameterSetName="ManualMode")]
     [Parameter(ParameterSetName="Silent")]
-    [string]$LogPath = "$env:USERPROFILE\UpstreamPowerPack",
+    [String]$LogFile = "$Path\Encrypt.ps1_$(Get-Date -Format "yyyy-MM-dd").log",
 
     [Parameter(ParameterSetName="ManualMode")]
     [Parameter(ParameterSetName="Silent")]
@@ -62,7 +62,7 @@ Function Write-Message {
     Param ($Message, [switch]$Warning, [switch]$Throw)
 
     if($Log) {
-        Out-File -InputObject "[$(Get-Date -Format "yyyy-MM-dd HH:mm:ss")] $($Message)" -FilePath $LogPath -Append
+        Out-File -InputObject "[$(Get-Date -Format "yyyy-MM-dd HH:mm:ss")] $($Message)" -FilePath $LogFile -Append
     }
     if($Warning) {
         Microsoft.PowerShell.Utility\Write-Verbose -Message "$Message"
@@ -101,16 +101,13 @@ if(-not (Test-Path -path $Path)) {
     }
 }
 
-if($LogPath.EndsWith("\")) {
-    $LogPath = $LogPath.Remove($LogPath.Length -1, 1)
+if($LogFile.EndsWith("\")) {
+    $LogFile = $LogFile.Remove($LogFile.Length -1, 1)
 }
 
-if(-not (Test-Path -path $LogPath)) {
-    try {
-        New-Item $LogPath -ItemType Directory
-    } catch [Exception]{
-        Write-Message -Message $_ -Throw
-    }
+if(Test-Path -path $LogFile -PathType Leaf) {
+    Write-Message -Message "LogFile cannot be a directory."
+    $LogFile = Read-Host "Enter full path to log file"
 }
 
 if($ManualMode) {
