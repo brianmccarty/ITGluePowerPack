@@ -1,23 +1,14 @@
 <#
 .SYNOPSIS
-    Installs the AzureAD module in order to connect to Office 365. Requires eleveted shell.
+    Installs the AzureAD module in order to connect to Office 365.
 .DESCRIPTION
-    This script saves your username and password in -path\o365credentials.xml. $Path\ is by default "$env:USERPROFILE\UpstreamPowerPack" unless specified with the -path parameter.
+
 .PARAMETER Username
     Your Office 365 username. This will be saved in -path\o365credentials.xml unless specifed not to.
 .PARAMETER Password
     Your Office 365 password. This will be saved in -path\o365credentials.xml unless specifed not to.
 .PARAMETER Path
     Default $env:USERPROFILE\UpstreamPowerPack. Set this parameter if you want to store your credentials somewhere else.
-.EXAMPLE
-    C:\PS> '.\Install O365 Automated version.ps1' -Username "user@example.com" -Password "weakpassword" -SaveCredentials
-    Installs AzureAD module and exports your credentials to %userprofile%\UpstreamPowerPack\o365credentials.xml.
-.EXAMPLE
-    C:\PS> '.\Install O365 Automated version.ps1' -Username "user@example.com" -Password "weakpassword" -path "C:\Office\API" -SaveCredentials
-    Installs AzureAD module and exports your credentials to C:\Office\API\o365credentials.xml.
-.EXAMPLE
-    C:\PS> '.\Install O365 Automated version.ps1'
-    Only installs AzureAD module.
 .NOTES
     Author:  Emile Priller
     Date:    08/05/2018
@@ -28,23 +19,23 @@ param(
     [Parameter(ParameterSetName="ManualMode")]
     [Switch]$ManualMode = $true,
 
-    [Parameter(ParameterSetName="RMM")]
-    [Switch]$RMM,
+    [Parameter(ParameterSetName="Silent")]
+    [Switch]$Silent,
 
     [Parameter(ParameterSetName="ManualMode")]
-    [Parameter(ParameterSetName="RMM")]
+    [Parameter(ParameterSetName="Silent")]
     [string]$Username,
 
     [Parameter(ParameterSetName="ManualMode")]
-    [Parameter(ParameterSetName="RMM")]
+    [Parameter(ParameterSetName="Silent")]
     [string]$Password,
 
     [Parameter(ParameterSetName="ManualMode")]
-    [Parameter(ParameterSetName="RMM")]
+    [Parameter(ParameterSetName="Silent")]
     [string]$Path = "$env:USERPROFILE\UpstreamPowerPack",
 
     [Parameter(ParameterSetName="ManualMode")]
-    [Parameter(ParameterSetName="RMM")]
+    [Parameter(ParameterSetName="Silent")]
     [Switch]$SaveCredentials
 )
 
@@ -81,7 +72,13 @@ Function Save-Credentials {
 }
 
 if(![bool](([System.Security.Principal.WindowsIdentity]::GetCurrent()).groups -match "S-1-5-32-544")) {
-    Write-Message -Message "Please run this script again as admin." -Throw
+    try {
+        $CommandLine = "-File `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments
+        Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList $CommandLine
+        Exit
+    } catch [Exception]{
+        Write-Message -Message "Please run this script again as admin." -Throw
+    }
 }
 
 if($Path.EndsWith("\")) {
@@ -109,7 +106,7 @@ if($ManualMode) {
 
     Write-Output "Press any key to exit."
     $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') > $null
-} else {
+} elseif($Silent) {
     try {
         if(-not (Get-Module -name "AzureAD")) {
             if (-not ((Get-PackageProvider).name -contains "NuGet")) {
