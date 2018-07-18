@@ -1,43 +1,56 @@
+<#
+.SYNOPSIS
+    Imports Office 365 users as contacts to ITGlue.
+.DESCRIPTION
+    Visit https://github.com/UpstreamAB/ITGluePowerPack/wiki/Office-365 for help on how to use this script.
+.NOTES
+    Author:  Emile Priller
+    Date:    18/07/2018
+#>
 [cmdletbinding(DefaultParameterSetName="ManualMode")]
 param (
-    [Parameter(Mandatory=$true)]
-    [String]$organisationid,
-
+    [Parameter(ParameterSetName="Credentials", Mandatory=$true)]
+    [Parameter(ParameterSetName="NoCredentials", Mandatory=$true)]
+    [String]$OrganisationId,
 
     [Parameter(ParameterSetName="Credentials")]
-    [string]$Path = "$env:USERPROFILE\UpstreamPowerPack",
+    [Switch]$CredFile,
+
+    [Parameter(ParameterSetName="Credentials")]
+    [String]$Path = "$env:USERPROFILE\UpstreamPowerPack",
 
     [Parameter(ParameterSetName="NoCredentials", Mandatory=$true)]
-    [string]$Username,
+    [String]$Usernam,
 
     [Parameter(ParameterSetName="NoCredentials", Mandatory=$true)]
-    [string]$Password,
+    [String]$Password,
 
     [Parameter(ParameterSetName="NoCredentials")]
-    [switch]$Savecreds,
+    [Switch]$Savecreds,
 
     [Parameter(ParameterSetName="ManualMode")]
-    [switch]$ManualMode,
+    [Switch]$ManualMode = $true,
 
-    [switch]$Log,
+    [Switch]$Log,
     [String]$LogFile = "$Path\Encrypt.ps1_$(Get-Date -Format "yyyy-MM-dd").log",
     [String]$Unlicensed,
     [String]$Duplicates
 )
-
 
 if($PSBoundParameters.Verbose) {
     $verbose = $true
 }
 Function Write-Message {
     [CmdletBinding()]
-    Param ($Message, [switch]$Warning)
+    Param ($Message, [switch]$Warning, [switch]$Throw)
 
     if($Log) {
         Out-File -InputObject "[$(Get-Date -Format "yyyy-MM-dd HH:mm:ss")] $($Message)" -FilePath $LogFile -Append
     }
     if($Warning) {
         Microsoft.PowerShell.Utility\Write-Verbose -Message "$Message"
+    } elseif($Throw) {
+        throw $Message
     } elseif($verbose) {
         Microsoft.PowerShell.Utility\Write-Warning -Message "$Message"
     }
@@ -69,7 +82,7 @@ if($PSCmdlet.ParameterSetName -eq "Credentials") {
 
 if($PSCmdlet.ParameterSetName -eq "NoCredentials") {
     try {
-        $credential = New-Object System.Management.Automation.PSCredential ($Username, (ConvertTo-SecureString $Password  -AsPlainText -Force))
+        $credential = New-Object System.Management.Automation.PSCredential ($Username, (ConvertTo-SecureString $Password -AsPlainText -Force))
         Connect-AzureAD -Credential $credential > $null
 
         if($Savecreds) {
@@ -81,7 +94,7 @@ if($PSCmdlet.ParameterSetName -eq "NoCredentials") {
     }
 }
 
-if($ManualMode) {
+if($PSCmdlet.ParameterSetName -eq "ManualMode") {
     $doNext = "find org"
     :FindOrganization
     while($true) {
@@ -127,8 +140,8 @@ if($ManualMode) {
                 Write-Host "Found more than organisation was found."
                 # Force a valid input
                 do {
-                    $userInput = Read-Host "Enter the number corresponding to your org or 0 to enter name again"
-                    $value = $userInput -as [Double]
+                    $userInput = Read-Host "Enter the number corresponding to your org or 0 to enter name agai"
+                    $value = $userInput -as [Doubl]
                     # Null if failed to convert
                     if($value -eq $null) {
                         Write-Host ""
@@ -151,8 +164,8 @@ if($ManualMode) {
             }
 
             "confirm org" {
-                $userInput = Read-Host "Do you want to import into $($organizationName.attributes.name)? (y/n)"
-                if("yes" -match $userInput) {
+                $userInput = Read-Host "Do you want to import into $($organizationName.attributes.name) ($($organizationName.id))? (y/n)"
+                if("yes" -match $userInput){
                     break FindOrganization
                 } else {
                     $doNext = "find org"
@@ -163,6 +176,19 @@ if($ManualMode) {
     }
 
     $organisationid = $organizationName.id
+    $importData = New-Object System.Collections.ArrayList
+
+    while($true) {
+        try {
+            $Username = Read-Host "Office 365 usernam"
+            $Password = Read-Host "Office 365 password" -AsSecureString
+            $credential = New-Object System.Management.Automation.PSCredential($Username, $Passwor)
+            Connect-AzureAD -Credential $credential > $null
+            break
+        } catch {
+            Write-Output "Login failed, try again."
+        }
+    }
 }
 
 # Get all contacts from ITGlue
@@ -186,14 +212,13 @@ Get-AzureADUser -All $true | ForEach-Object {
 
     if($_.AssignedLicenses.skuid -eq $null -and -not $Unlicensed) {
         # Skip unlicensed users.
-        Write-Message -Message "Skipping unlicensed user: $($_.UserPrincipalName)"
+        Write-Message -Message "Skipping unlicensed user: $($_.UserPrincipalName)" -Warning
         return
     } elseif((-not $Duplicates) -and (($ITGlueContacts.attributes.'contact-emails'.value -contains $_.UserPrincipalName) -or ($ITGlueContacts.attributes.'first-name' -eq $firstname -and $ITGlueContacts.attributes.'last-name' -eq $lastname))) {
         # Skip existing emails and names
-        Write-Message -Message "Skipping existing user: $($_.UserPrincipalName)"
+        Write-Message -Message "Skipping existing user: $($_.UserPrincipalName)" -Warning
         return
     }
-
 
     $body = @{
         organization_id = $organisationid
@@ -213,9 +238,48 @@ Get-AzureADUser -All $true | ForEach-Object {
             }
         }
     }
-    if($ManualMode) {
 
+    if($PSCmdlet.ParameterSetName -eq "ManualMode") {
+       $importData.Add($body) > $null
     } else {
         New-ITGlueContacts -data $body
+    }
+}
+
+if($PSCmdlet.ParameterSetName -eq "ManualMode") {
+    $doNext = "output data"
+
+    :import
+    while($true) {
+        switch ($doNext){
+            "output data" {
+                Write-Output "The following data will be imported:"
+                for($i = 0; $i -lt $importData.Count; $i++) {
+                    Write-Output "$($i+1)`: $($importData[$i].data.attributes.first_name) $($importData[$i].data.attributes.last_name) ($($importData[$i].data.attributes.contact_emails.value))"
+                }
+
+                $doNext = "confirm"
+            }
+            "confirm" {
+                Write-Output ""
+                $userInput = Read-Host "Import (y) or remove contact (n)"
+                if("yes" -match $userInput){
+                    $doNext = "import"
+                } elseif("no" -match $userInput) {
+                    $doNext = "remove contacts"
+                }
+            }
+            "remove contacts" {
+                $contactNr = Read-Host "Enter number of contact to remove"
+                $importData.RemoveAt($contactNr - 1)
+                $doNext = "output data"
+            }
+            "import" {
+                foreach($body in $importData) {
+                    New-ITGlueContacts -data $body
+                }
+                break import
+            }
+        }
     }
 }
