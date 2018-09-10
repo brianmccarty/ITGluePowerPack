@@ -30,7 +30,8 @@ $body = @{
                                         + "Visma Lön`r`n" `
                                         + "Visma Tid`r`n" `
                                         + "Hogia Smart Ekonomi`r`n" `
-                                        + "Navision`r`n" `
+                                        + "BOX.com`r`n" `
+                                        + "GotoMeeting`r`n" `
                                         + "Mailchimp`r`n" `
                                         + "Zoom Meeting"
                             required = $false
