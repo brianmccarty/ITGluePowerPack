@@ -22,6 +22,14 @@ param(
     [Switch]$Silent
 )
 
+Try {
+	[io.file]::OpenWrite("$env:ProgramFiles\WindowsPowerShell\Modules\test.file").close()
+	Remove-Item "$env:ProgramFiles\WindowsPowerShell\Modules\test.file"
+} Catch {
+	Write-Warning "Unable to update."
+	Write-Warning "You do not have access to $env:ProgramFiles\WindowsPowerShell\Modules\."
+	exit
+}
 
 # Download required software
 if(!$Silent) {Write-Host 'Downloading ITGlueAPI PowerShell wrapper... ' -NoNewline}
