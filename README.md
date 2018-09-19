@@ -1,3 +1,5 @@
+Attentions: All Office 365 scripts have been removed becuase ITGlue now have native integration: https://kb.itglue.com/hc/en-us/articles/360010077111-Office-365-Integration
+
 # Upstream IT Glue Power Pack  
 Don't go mainstream, go [Upstream](https://en.upstream.se)!
   
