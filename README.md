@@ -1,6 +1,3 @@
-# ATTENTION!
-Please be aware that changes has been made to the ITGlue PowerShell Wrapper. These script **may** not function as inteded until they have been updated. I will do it as soon as I can.
-
 # Upstream IT Glue Power Pack  
 Don't go mainstream, go [Upstream](https://en.upstream.se)!
   
