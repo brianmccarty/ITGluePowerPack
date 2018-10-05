@@ -18,7 +18,7 @@ $data = Get-ITGlueLocations -page_size 1000
 $page = 1
 while($data.meta.'total-pages' -gt $page) {
     $page++
-    Get-ITGlueOrganizations -page_number $page | Select-Object -ExpandProperty data | ForEach-Object {
+    Get-ITGlueLocations -page_number $page | Select-Object -ExpandProperty data | ForEach-Object {
         $locations.add($_)
     }
 }
