@@ -1,6 +1,11 @@
-# Get all organizations.
+# Get all organizations..
 $data = Get-ITGlueOrganizations -page_size 1000
-[System.Collections.ArrayList]$organizations = $data.data
+# ..as array..
+$organizations = New-Object System.Collections.ArrayList
+# ..and add them to array
+foreach($item in $data.data) {
+    $organizations.Add($item)
+}
 # Check for more pages. Get the rest of the data if there is.
 $page = 1
 while($data.meta.'total-pages' -gt $page) {
@@ -13,7 +18,12 @@ while($data.meta.'total-pages' -gt $page) {
 
 # Get all locations.
 $data = Get-ITGlueLocations -page_size 1000
-[System.Collections.ArrayList]$locations = $data.data
+# ..as array..
+$locations = New-Object System.Collections.ArrayList
+# ..and add them to array
+foreach($item in $data.data) {
+    $locations.Add($item)
+}
 # Check for more pages. Get the rest of the data if there is.
 $page = 1
 while($data.meta.'total-pages' -gt $page) {
