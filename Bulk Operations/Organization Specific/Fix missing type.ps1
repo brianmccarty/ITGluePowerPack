@@ -1,14 +1,13 @@
 [cmdletbinding(DefaultParameterSetName="typeName")]
 param(
     [Parameter(ParameterSetName="typeName")]
-    [string]$TypeName = "Client"
+    [string]$TypeName = "Client",
 
     [Parameter(ParameterSetName="typeID")]
     [int]$TypeId
 )
 
 if($PsCmdlet.ParameterSetName -eq "typeName") {
-    
     $TypeId = (Get-ITGlueOrganizationTypes -filter_name $TypeName).data.id
     if($TypeId.Count -eq 0 ) {
         Write-Error "No type was wound with the name $TypeName"
@@ -46,7 +45,4 @@ $organizations | ForEach-Object {
     }
 }
 
-$body = @(
-    $organizationsToUpdate
-)
-Set-ITGlueOrganizations -data $body
+Set-ITGlueOrganizations -data $organizationsToUpdate
