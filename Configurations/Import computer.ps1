@@ -7,22 +7,22 @@ param(
 
 # Get or create IDs if not existing
 # Manufacturers
-#Write-Verbose "Searching for manufacturer in ITGlue..."
+Write-Verbose "Searching for manufacturer in ITGlue..."
 if($manufacturer = (Get-ITGlueManufacturers -filter_name (Get-WmiObject Win32_BIOS).Manufacturer)) {
-    #Write-Verbose "Manufacturer found: $($manufacturer.data.id), '$($manufacturer.data.attributes.name)'."
+    Write-Verbose "Manufacturer found: $($manufacturer.data.id), '$($manufacturer.data.attributes.name)'."
 } elseif($manufacturer = New-ITGlueManufacturers -data (@{type = "manufacturers";attributes = @{name = (Get-WmiObject Win32_BIOS).Manufacturer}})) {
-    #Write-Verbose "Manufacturer not found, created: $($manufacturer.data.id), '$($manufacturer.data.attributes.name)'."
+    Write-Verbose "Manufacturer not found, created: $($manufacturer.data.id), '$($manufacturer.data.attributes.name)'."
 }
 $manufacturerId = $manufacturer.data.id
 
 # Model ID
 # Look for model in ITGlue
-#Write-Verbose "Searching for model in ITGlue..."
+Write-Verbose "Searching for model in ITGlue..."
 if($model = (Get-ITGlueModels -manufacturer_id $manufacturerId).data) {
-    #Write-Verbose "Model found: $($model.attributes)."
+    Write-Verbose "Model found: $($model.attributes)."
 # If not found, create new.
 } elseif($model = New-ITGlueModels -data (@{type = "models";attributes = @{manufacturer_id = $manufacturerId;name = (Get-WmiObject Win32_Computersystem).Model}})) {
-    #Write-Verbose "Model not found, created: $($model.attributes)."
+    Write-Verbose "Model not found, created: $($model.attributes)."
 }
 
 # Windows version
@@ -49,12 +49,12 @@ foreach ($os in $itGlueOS) {
 }
 
 # Network interfaces
-#Write-Verbose "Searching for network interfaces..."
+Write-Verbose "Searching for network interfaces..."
 $interfaceArray = @()
 # Mark first as primary.
 $firstAsPrimary = $true
 Get-NetAdapter | ForEach-Object {
-    #Write-Verbose "Found interface: $($_.InterfaceAlias), $((Get-NetIPConfiguration -InterfaceIndex $_.InterfaceIndex).IPv4Address.IPAddress), primary: $($firstAsPrimary)"
+    Write-Verbose "Found interface: $($_.InterfaceAlias), $((Get-NetIPConfiguration -InterfaceIndex $_.InterfaceIndex).IPv4Address.IPAddress), primary: $($firstAsPrimary)"
     $interfaceArray += @{
         type = "configuration_interfaces"
         attributes = @{
@@ -67,7 +67,7 @@ Get-NetAdapter | ForEach-Object {
 }
 
 # New config
-#Write-Verbose "Creating configuration..."
+Write-Verbose "Creating configuration..."
 $configuration = @{
     type = "configurations"
     attributes = @{
@@ -93,12 +93,12 @@ $configuration = @{
         }
     }
 }
-#Write-Verbose "Configuration created."
-#Write-Verbose "$($configuration | ConvertTo-Json -Depth 100)"
+Write-Verbose "Configuration created."
+Write-Verbose "$($configuration | ConvertTo-Json -Depth 100)"
 
 # Try to upload to ITGlue.
 try {
-    #Write-Verbose "Uploading configuration to ITGlue..."
+    Write-Verbose "Uploading configuration to ITGlue..."
     $thisConfiguration = New-ITGlueConfigurations -data $configuration
 
 } catch {
