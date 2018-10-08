@@ -1,21 +1,3 @@
-# Get all organizations..
-$data = Get-ITGlueOrganizations -page_size 1000
-# ..as array..
-$organizations = New-Object System.Collections.ArrayList
-# ..and add them to array
-foreach($item in $data.data) {
-    $organizations.Add($item)
-}
-# Check for more pages. Get the rest of the data if there is.
-$page = 1
-while($data.meta.'total-pages' -gt $page) {
-    $page++
-    Get-ITGlueOrganizations -page_number $page | Select-Object -ExpandProperty data | ForEach-Object {
-        $organizations.add($_)
-    }
-}
-
-
 # Get all locations.
 $data = Get-ITGlueLocations -page_size 1000
 # ..as array..
@@ -32,47 +14,27 @@ while($data.meta.'total-pages' -gt $page) {
         $locations.add($_)
     }
 }
-$locationsToUpdate = New-Object System.Collections.ArrayList
 
 
-
-# Loop through all organizations
-$organizations | ForEach-Object {
-    # Placeholder for org id
-    $currentOrgId = $_.id
-    # Count all primary locations
-    if((($locations | Where {$_.attributes.'organization-id' -eq $currentOrgId}).attributes | Where Primary -eq $true | Measure-Object | Select -expand count) -eq 0) {
-        # Filter out organization again if primary count equal 0
-        $locations | Where {$_.attributes.'organization-id' -eq $currentOrgId} | ForEach-Object {
-            # if($null)
-            if($locationsToUpdate) {
-                # Find $currentOrgId has already been added
-                if( -not (($locationsToUpdate.attributes.'organization_id').Contains($currentOrgId)) ) {
-                    # Add location if it has not
-                    $locationsToUpdate.Add(@{
-                        type = "locations"
-                        attributes = @{
-                            id = $_.id
-                            primary = 1
-                            organization_id = $currentOrgId
-                        }
-                    })
-                }
-            # $null -eq $true
-            } else {
-                # First item
-                $locationsToUpdate.Add(@{
+$locationsToUpdate = @()
+$locations | ForEach-Object {
+    # Added loop in case if multiple locations
+    $_ | ForEach-Object {
+        # Check if primary
+        if($_.attributes.primary -eq $false) {
+            # Prevent duplicates
+            if(-not ($locationsToUpdate.attributes.'organization_id' -contains $_.attributes.'organization-id')) {
+                $locationsToUpdate += @{
                     type = "locations"
                     attributes = @{
                         id = $_.id
                         primary = 1
-                        organization_id = $currentOrgId
+                        organization_id = $_.attributes.'organization-id'
                     }
-                })
+                }
             }
         }
     }
 }
 
-$body =  @($locationsToUpdate)
-Set-ITGlueLocations -data $body
+Set-ITGlueLocations -data $locationsToUpdate

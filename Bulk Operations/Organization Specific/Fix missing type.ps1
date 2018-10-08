@@ -31,18 +31,24 @@ while($data.meta.'total-pages' -gt $page) {
         $organizations.add($_)
     }
 }
-$organizationsToUpdate = @()
 
+$organizationsToUpdate = @()
 $organizations | ForEach-Object {
+    # Check if type ID missing
     if(-not $_.attributes.'organization-type-id') {
-        $organizationsToUpdate += @{
-            type = "organizations"
-            attributes = @{
-                id = $_.id
-                organization_type_id = $TypeId
+        # Check for duplicates?
+        if(-not ($organizationsToUpdate.attributes.id -contains $_.id)) {
+            # Add to update list
+            $organizationsToUpdate += @{
+                type = "organizations"
+                attributes = @{
+                    id = $_.id
+                    organization_type_id = $TypeId
+                }
             }
         }
     }
 }
 
+# Update ITGlue
 Set-ITGlueOrganizations -data $organizationsToUpdate
