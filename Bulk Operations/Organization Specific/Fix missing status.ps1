@@ -8,43 +8,47 @@ param(
 )
 
 if($PsCmdlet.ParameterSetName -eq "statusName") {
-    $StatusId = ((Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq $StatusName}).id
-    if($StatusId.Count -gt 1) {
-        #$statusId = $StatusId[1]
-        Write-Error "More than one status ID was found. Please specify the ID to use."
-        $validIds = @()
-        (Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq $StatusName} | ForEach-Object {
-            Write-Output "$($_.id) - $($_.attributes.name) - Synced: $($_.attributes.synced)"
-            $validIds += $_.id
-        }
-        while(-not $validIds.Contains($statusId)) {
-            $StatusId = Read-Host -Prompt "ID"
-            if(-not $validIds.Contains($statusId)) {
-                Write-Output "Please enter a valid ID."
-            }
-        }
+    $StatusId = (Get-ITGlueOrganizationStatuses -filter_name $StatusName).data.id
+    if($StatusId.Count -eq 0 ) {
+        Write-Error "No status was wound with the name $StatusName"
+        exit
     }
 }
 
-$organizations = (Get-ITGlueOrganizations -page_size ((Get-ITGlueOrganizations).meta.'total-count')).data
+# Get all organizations..
+$data = Get-ITGlueOrganizations -page_size 1000
+# ..as array..
+$organizations = New-Object System.Collections.ArrayList
+# ..and add them to array
+foreach($item in $data.data) {
+    $organizations.Add($item)
+}
+# Check for more pages. Get the rest of the data if there is.
+$page = 1
+while($data.meta.'total-pages' -gt $page) {
+    $page++
+    Get-ITGlueOrganizations -page_number $page | Select-Object -ExpandProperty data | ForEach-Object {
+        $organizations.add($_)
+    }
+}
+
 $organizationsToUpdate = @()
-
 $organizations | ForEach-Object {
+    # Check if status ID missing
     if(-not $_.attributes.'organization-status-id') {
-        $organizationsToUpdate += @{
-            type = "organizations"
-            attributes = @{
-                id = $_.id
-                organization_status_id = $StatusId
+        # Check for duplicates?
+        if(-not ($organizationsToUpdate.attributes.id -contains $_.id)) {
+            # Add to update list
+            $organizationsToUpdate += @{
+                type = "organizations"
+                attributes = @{
+                    id = $_.id
+                    organization_status_id = $StatusId
+                }
             }
         }
     }
 }
 
-$body = @{
-    data = @(
-        $organizationsToUpdate
-    )
-}
-
-Set-ITGlueOrganizations -data $body
+# Update ITGlue
+Set-ITGlueOrganizations -data $organizationsToUpdate

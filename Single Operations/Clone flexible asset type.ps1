@@ -33,23 +33,21 @@ $assetData = @()
 
 
 $orgAsset = (Get-ITGlueFlexibleAssetTypes -id $ID).data.attributes
-$body = [ordered]@{
-    data = [ordered]@{
-        type = 'flexible_asset_types'
-        attributes = @{
-            name = "$($orgAsset.name) clone"
-            description = $orgAsset.description
-            icon = $orgAsset.icon
-            enabled = $orgAsset.enabled
-        }
-        relationships = @{
-            flexible_asset_fields = @{
-                data = @(
-                    $assetData
-                )
-            }
+$data = [ordered]@{
+    type = 'flexible_asset_types'
+    attributes = @{
+        name = "$($orgAsset.name) clone"
+        description = $orgAsset.description
+        icon = $orgAsset.icon
+        enabled = $orgAsset.enabled
+    }
+    relationships = @{
+        flexible_asset_fields = @{
+            data = @(
+                $assetData
+            )
         }
     }
 }
 
-New-ITGlueFlexibleAssetTypes -data $body
+New-ITGlueFlexibleAssetTypes -data $data
