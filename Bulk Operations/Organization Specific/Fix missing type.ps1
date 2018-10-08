@@ -1,32 +1,37 @@
 [cmdletbinding(DefaultParameterSetName="typeName")]
 param(
     [Parameter(ParameterSetName="typeName")]
-    [string]$TypeName = "Active",
+    [string]$TypeName = "Client"
 
     [Parameter(ParameterSetName="typeID")]
     [int]$TypeId
 )
 
 if($PsCmdlet.ParameterSetName -eq "typeName") {
-    $TypeId = ((Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq $TypeName}).id
-    if($TypeId.Count -gt 1) {
-        #$TypeId = $TypeId[1]
-        Write-Error "More than one type ID was found. Please specify the ID to use."
-        $validIds = @()
-        (Get-ITGlueOrganizationStatuses).data | where {$_.attributes.name -eq $TypeName} | ForEach-Object {
-            Write-Output "$($_.id) - $($_.attributes.name) - Synced: $($_.attributes.synced)"
-            $validIds += $_.id
-        }
-        while(-not $validIds.Contains($TypeId)) {
-            $TypeId = Read-Host -Prompt "ID"
-            if(-not $validIds.Contains($TypeId)) {
-                Write-Output "Please enter a valid ID."
-            }
-        }
+    
+    $TypeId = (Get-ITGlueOrganizationTypes -filter_name $TypeName).data.id
+    if($TypeId.Count -eq 0 ) {
+        Write-Error "No type was wound with the name $TypeName"
+        exit
     }
 }
 
-$organizations = (Get-ITGlueOrganizations -page_size ((Get-ITGlueOrganizations).meta.'total-count')).data
+# Get all organizations..
+$data = Get-ITGlueOrganizations -page_size 1000
+# ..as array..
+$organizations = New-Object System.Collections.ArrayList
+# ..and add them to array
+foreach($item in $data.data) {
+    $organizations.Add($item)
+}
+# Check for more pages. Get the rest of the data if there is.
+$page = 1
+while($data.meta.'total-pages' -gt $page) {
+    $page++
+    Get-ITGlueOrganizations -page_number $page | Select-Object -ExpandProperty data | ForEach-Object {
+        $organizations.add($_)
+    }
+}
 $organizationsToUpdate = @()
 
 $organizations | ForEach-Object {
@@ -41,10 +46,7 @@ $organizations | ForEach-Object {
     }
 }
 
-$body = @{
-    data = @(
-        $organizationsToUpdate
-    )
-}
-
+$body = @(
+    $organizationsToUpdate
+)
 Set-ITGlueOrganizations -data $body
