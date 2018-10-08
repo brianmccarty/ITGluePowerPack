@@ -44,8 +44,9 @@ $organizations | ForEach-Object {
     if((($locations | Where {$_.attributes.'organization-id' -eq $currentOrgId}).attributes | Where Primary -eq $true | Measure-Object | Select -expand count) -eq 0) {
         # Filter out organization again if primary count equal 0
         $locations | Where {$_.attributes.'organization-id' -eq $currentOrgId} | ForEach-Object {
-            # Find $currentOrgId has already been added
+            # if($null)
             if($locationsToUpdate) {
+                # Find $currentOrgId has already been added
                 if( -not (($locationsToUpdate.attributes.'organization_id').Contains($currentOrgId)) ) {
                     # Add location if it has not
                     $locationsToUpdate.Add(@{
@@ -57,9 +58,9 @@ $organizations | ForEach-Object {
                         }
                     })
                 }
+            # $null -eq $true
             } else {
-                # Add location if it has not
-                # AND it is the first one to add (i.e. variable is null)
+                # First item
                 $locationsToUpdate.Add(@{
                     type = "locations"
                     attributes = @{
