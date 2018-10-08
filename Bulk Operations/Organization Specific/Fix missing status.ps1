@@ -39,7 +39,7 @@ $organizations | ForEach-Object {
             type = "organizations"
             attributes = @{
                 id = $_.id
-                organization_status_id = 10949#$StatusId
+                organization_status_id = $StatusId
             }
         }
     }
