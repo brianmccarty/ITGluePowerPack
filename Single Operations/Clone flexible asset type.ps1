@@ -50,4 +50,4 @@ $data = [ordered]@{
     }
 }
 
-New-ITGlueFlexibleAssetTypes -data $body
+New-ITGlueFlexibleAssetTypes -data $data
