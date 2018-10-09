@@ -1,11 +1,11 @@
 [cmdletbinding()]
 param(
-    #[Parameter(Mandatory=$True)]
-    [int]$ID = 67566
+    [Parameter(Mandatory=$True)]
+    [int]$ID
 )
 
 $assetData = @()
-(Get-ITGlueFlexibleAssetFields -flexible_asset_type_id 67566).data.attributes | ForEach-Object {
+(Get-ITGlueFlexibleAssetFields -flexible_asset_type_id $ID).data.attributes | ForEach-Object {
     $assetDataTemp = [ordered]@{}
     $_.PSObject.Properties | ForEach-Object {
         if($_.Name.GetType().Name -eq "String" -and $_.Name.Contains("-")) {
