@@ -5,7 +5,7 @@ param(
 )
 
 $assetData = @()
-(Get-ITGlueFlexibleAssetFields -flexible_asset_type_id $ID).data.attributes | ForEach-Object {
+(Get-ITGlueFlexibleAssetFields -flexible_asset_type_id $ID -ErrorAction Stop).data.attributes | ForEach-Object {
     $assetDataTemp = [ordered]@{}
     $_.PSObject.Properties | ForEach-Object {
         if($_.Name.GetType().Name -eq "String" -and $_.Name.Contains("-")) {
@@ -32,7 +32,7 @@ $assetData = @()
 }
 
 
-$orgAsset = (Get-ITGlueFlexibleAssetTypes -id $ID).data.attributes
+$orgAsset = (Get-ITGlueFlexibleAssetTypes -id $ID -ErrorAction Stop).data.attributes
 $data = [ordered]@{
     type = 'flexible_asset_types'
     attributes = @{
