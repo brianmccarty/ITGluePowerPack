@@ -7,10 +7,6 @@ param(
 
     [Parameter(ParameterSetName="Loud")]
     [Parameter(ParameterSetName="Silent")]
-    [Switch]$ExportAPIKey,
-
-    [Parameter(ParameterSetName="Loud")]
-    [Parameter(ParameterSetName="Silent")]
     [Alias('locale','dc')]
     [ValidateSet( 'US', 'EU')]
     [String]$DataCenter = '',
