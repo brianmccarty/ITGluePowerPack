@@ -1,17 +1,21 @@
 [cmdletbinding(DefaultParameterSetName="Loud")]
 param(
-	[Parameter(ParameterSetName="Loud","Silent")]
+	[Parameter(ParameterSetName="Loud")]
+	[Parameter(ParameterSetName="Silent")]
     [String]$APIKey = "",
 
-	[Parameter(ParameterSetName="Loud","Silent")]
+	[Parameter(ParameterSetName="Loud")]
+	[Parameter(ParameterSetName="Silent")]
     [Switch]$ExportAPIKey,
 
-	[Parameter(ParameterSetName="Loud","Silent")]
+	[Parameter(ParameterSetName="Loud")]
+	[Parameter(ParameterSetName="Silent")]
     [Alias('locale','dc')]
     [ValidateSet( 'US', 'EU')]
     [String]$DataCenter = '',
 
-	[Parameter(ParameterSetName="Loud","Silent")]
+	[Parameter(ParameterSetName="Loud")]
+	[Parameter(ParameterSetName="Silent")]
     [Switch]$SaveSettings,
 
     [Parameter(ParameterSetName="Silent")]
@@ -75,8 +79,7 @@ if($DataCenter -ne "") {
 	if(!$Silent) {Write-Host "Setting up base URI, datacenter: $DataCenter"}
 	Add-ITGlueBaseURI -data_center $DataCenter
 } else {
-	if(!$Silent) {Write-Host "Setting up base URI, datacenter: US"}
-	Add-ITGlueBaseURI
+	if(!$Silent) {Write-Host "Default is base URI is https://api.itglue.com"}
 }
 
 # Save API key for user

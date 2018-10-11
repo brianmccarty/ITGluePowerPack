@@ -1,18 +1,22 @@
 #Requires -Version 5
 [cmdletbinding(DefaultParameterSetName="Silent")]
 param(
-	[Parameter(ParameterSetName="Log","Silent")]
+	[Parameter(ParameterSetName="Loud")]
+    [Parameter(ParameterSetName="Silent")]
     [String]$APIKey = "",
 
-    [Parameter(ParameterSetName="Log","Silent")]
+    [Parameter(ParameterSetName="Loud")]
+    [Parameter(ParameterSetName="Silent")]
     [Switch]$ExportAPIKey,
 
-    [Parameter(ParameterSetName="Log","Silent")]
+    [Parameter(ParameterSetName="Loud")]
+    [Parameter(ParameterSetName="Silent")]
     [Alias('locale','dc')]
     [ValidateSet( 'US', 'EU')]
     [String]$DataCenter = '',
 
-    [Parameter(ParameterSetName="Log","Silent")]
+    [Parameter(ParameterSetName="Loud")]
+    [Parameter(ParameterSetName="Silent")]
     [Switch]$SaveSettings,
 
     [Parameter(ParameterSetName="Log")]
@@ -81,11 +85,10 @@ if($APIKey -ne "") {
 }
 
 if($DataCenter -ne "") {
-	if($Log) {"$(Get-Date) Adding Base URI, datacenter: $DataCenter" | Out-File -Append -FilePath $Path}
+	if($Log) {"$(Get-Date) Adding base URI, datacenter: $DataCenter" | Out-File -Append -FilePath $Path}
 	Add-ITGlueBaseURI -data_center $DataCenter
 } else {
-	if($Log) {"$(Get-Date) Adding Base URI, datacenter: US" | Out-File -Append -FilePath $Path}
-	Add-ITGlueBaseURI
+	if($Log) {"$(Get-Date) Default is base URI is https://api.itglue.com" | Out-File -Append -FilePath $Path}
 }
 
 # Save API key for user
