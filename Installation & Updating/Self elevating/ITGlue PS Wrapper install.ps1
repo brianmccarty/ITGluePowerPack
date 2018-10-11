@@ -1,3 +1,4 @@
+#Requires -Version 5
 [cmdletbinding(DefaultParameterSetName="Loud")]
 param(
 	[Parameter(ParameterSetName="Loud")]

@@ -1,3 +1,5 @@
+#Requires -Version 5
+#Requires -RunAsAdministrator
 [cmdletbinding(DefaultParameterSetName="Silent")]
 param(
     [Parameter(ParameterSetName="Log")]

@@ -1,3 +1,4 @@
+#Requires -Version 5
 [cmdletbinding(DefaultParameterSetName="Silent")]
 param(
     [Parameter(ParameterSetName="Silent")]
