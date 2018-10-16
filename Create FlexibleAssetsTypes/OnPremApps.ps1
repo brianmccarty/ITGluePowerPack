@@ -28,9 +28,10 @@ $data = @{
                                     + "Hogia Beslutsstöd`r`n" `
                                     + "Hogia Lön`r`n" `
                                     + "Lundalogik Lime`r`n" `
-                                    + "SolidWorks`r`n" `
                                     + "Microsoft Office`r`n" `
+                                    + "SolidWorks`r`n" `
                                     + "SuperOffice CRM`r`n" `
+                                    + "Unitrends Backup`r`n" `
                                     + "Veeam Backup`r`n" `
                                     + "Visma Administration`r`n" `
                                     + "Visma Anläggningsregister`r`n" `
