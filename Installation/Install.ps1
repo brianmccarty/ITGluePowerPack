@@ -19,10 +19,10 @@ if((Get-PSRepository -Name PSGallery).InstallationPolicy -eq "Untrusted") {
     Set-PSRepository -InstallationPolicy Trusted -Name PSGallery
 }
 
-if($PSCmdlet.ParameterSetName -eq "SaveSettings") {
-	# Installation
-	Install-Module ITGlueAPI -Force
+# Installation
+Install-Module ITGlueAPI -Force
 
+if($PSCmdlet.ParameterSetName -eq "SaveSettings") {
 	# Settings
 	Add-ITGlueAPIKey -ApiKey $API_Key
 	if($Data_Center) {Add-ITGlueBaseURI -data_center $Data_Center}
