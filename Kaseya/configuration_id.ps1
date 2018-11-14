@@ -1,1 +1,0 @@
-(Get-ITGlueConfigurations -filter_name '#vAgentLabel.Machine_GroupID#').data.id
