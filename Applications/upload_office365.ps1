@@ -23,13 +23,15 @@ param(
 
     [int64[]]$SpecialistsId,
     
-    [int64[]]$ComputerId
+    [Switch]$TagConfiguration
 )
 
-$application = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\O365BusinessRetail - *" -ErrorAction Stop
+$application = Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\O365BusinessRetail*" -ErrorAction Stop
 
-if($ComputerId -eq 0) {
+if($TagConfiguration) {
     $ComputerId = (Get-ITGlueConfigurations -organization_id $OrganizationId -filter_name $env:COMPUTERNAME).data.id
+} else {
+	$ComputerId = $null
 }
 
 $data = @{
