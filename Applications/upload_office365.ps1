@@ -51,6 +51,7 @@ $data = @{
 			"financial-application-owner-at-the-customer" = $FinancialOwnerId
 			"our-specialist-s"                            = $SpecialistsId
 			"how-is-this-application-delivered"           = "Locally from a computer"
+            "associated-servers-s-or-computer-s"          = $ComputerId 
 			"application-user-interface"                  = "Browser, client software and mobile App"
             "application-url-if-available"                = "http://login.microsoftonline.com/"
 
