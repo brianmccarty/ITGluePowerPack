@@ -1,4 +1,5 @@
 #Requires -Modules @{ ModuleName="ITGlueAPI"; ModuleVersion="2.0.0" }
+##Requires v3
 [cmdletbinding()]
 param(
     [Parameter(Mandatory=$true)]
@@ -55,4 +56,5 @@ $data = @{
 	}
 }
 
-New-ITGlueFlexibleAssets -data $data
+$resp = New-ITGlueFlexibleAssets -data $data
+return $resp.data.id
