@@ -1,5 +1,5 @@
 #Requires -Modules @{ ModuleName="ITGlueAPI"; ModuleVersion="2.0.0" }
-##Requires v3
+#Requires -Version 3
 [cmdletbinding()]
 param(
     [Parameter(Mandatory=$true)]
