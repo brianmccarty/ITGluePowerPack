@@ -2,7 +2,7 @@ $data = @{
     type = 'flexible_asset_types'
     attributes = @{
         name = 'Major Incidents'
-        description  = 'For logging of major incidents'
+        description  = 'For logging of major incidents.'
         icon = 'clock-o'
         enabled = $true
         show_in_menu = $true
@@ -16,7 +16,7 @@ $data = @{
                         order = 1
                         name = 'Incident'
                         kind = 'Text'
-                        hint = 'And incident number'
+                        hint = 'And the incident name as title.'
                         show_in_list = $true
                         use_for_title = $true
                     }
