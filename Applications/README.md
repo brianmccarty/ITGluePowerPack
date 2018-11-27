@@ -3,5 +3,5 @@ These script will not work unless you first prepare a place to upload to before 
 
 | Script | Flexible asset | Application name |
 | - | - | - |
-| upload_template.ps1 | On-Prem Apps/Cloud Apps | * |
-| upload_office365.ps1 | On-Prem Apps | Microsoft Office 365 |
+| Set-OnPremAppTemplate.ps1 | On-Prem Apps | Read comments in script |
+| Set-Office365.ps1 | On-Prem Apps | Microsoft Office 365 |
