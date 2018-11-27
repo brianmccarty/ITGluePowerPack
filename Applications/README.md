@@ -1,4 +1,4 @@
-# First-time-use (read this first!)
+# First-time-use
 These script will not work unless you first prepare a place to upload to before you run them. See below table.
 
 | Script               | Flexible asset | Application name     |
