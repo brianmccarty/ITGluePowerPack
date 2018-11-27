@@ -29,6 +29,7 @@ $data = @{
                                     + "Hogia Lön`r`n" `
                                     + "Lundalogik Lime`r`n" `
                                     + "Microsoft Office`r`n" `
+                                    + "Microsoft Office 365`r`n" `
                                     + "SolidWorks`r`n" `
                                     + "SuperOffice CRM`r`n" `
                                     + "Unitrends Backup`r`n" `
