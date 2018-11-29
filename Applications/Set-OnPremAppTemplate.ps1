@@ -72,6 +72,7 @@ $ApplicationName = ""
 # HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\O365BusinessRetail*
 # The star is to catch either "en-us" or other languages.
 if(-not $RemoveConfiguration) {
+	$applications = @()
 	# $registyPath = "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\"
 	# $registyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\"
 	$applications += Get-ItemProperty -Path $registyPath | Select-Object -Property DisplayName, DisplayVersion, Publisher, InstallDate
